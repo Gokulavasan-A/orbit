@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 1
+
+app:
+  session-cleanup:
+    enabled: false
+  security:
+    jwt:
+      # TEST-ONLY key (64 bytes, public in this repository). Never use it anywhere else.
+      signing-key: dGVzdC1vbmx5LWp3dC1zaWduaW5nLWtleS1mb3ItZW50ZXJwcmlzZS1hcGktdW5pdC10ZXN0cy0wMDAwMDA=
+    cors:
+      allowed-origins: http://localhost:5173
+
+logging:
+  level:
+    com.enterprise.api: DEBUG

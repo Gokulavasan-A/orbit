@@ -1,0 +1,19 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Env files. The root .gitignore ignores .env.*; .env.development is the exception because it
+# holds only public VITE_* dev settings (every VITE_* value ends up in the bundle, so none may be a
+# secret). Local overrides stay ignored.
+!.env.development
+.env.local
+.env.*.local
+
+# Logs and editor files
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store

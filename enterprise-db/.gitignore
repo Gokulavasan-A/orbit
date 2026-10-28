@@ -1,0 +1,10 @@
+# Local Flyway config with real credentials
+flyway.conf
+flyway.toml
+flyway.user.toml
+
+# Environment / editor files
+.env
+*.local.sql
+.vscode/
+.idea/

@@ -1,0 +1,148 @@
+spring:
+  application:
+    name: enterprise-api
+  autoconfigure:
+    # Users are authenticated by AuthServiceImpl (stored procedures + BCrypt), not by
+    # a UserDetailsService. Without this exclusion Boot creates an in-memory user and
+    # logs its generated password.
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+
+  # Connection settings come only from environment variables. The API connects
+  # as enterprise_app: EXECUTE on dbo and SELECT on the inline TVFs, no table access.
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      pool-name: enterprise-api-pool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 5000
+      validation-timeout: 3000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      keepalive-time: 120000
+      auto-commit: true
+      data-source-properties:
+        applicationName: enterprise-api
+
+  jackson:
+    time-zone: UTC
+    datatype:
+      datetime:
+        write-dates-as-timestamps: false
+    default-property-inclusion: always
+
+  # Tomcat, @Async (applicationTaskExecutor) and @Scheduled all run on virtual threads.
+  threads:
+    virtual:
+      enabled: true
+  task:
+    execution:
+      simple:
+        # Cap parallel @Async work so it cannot exhaust the connection pool.
+        concurrency-limit: 50
+
+server:
+  compression:
+    enabled: true
+    mime-types: application/json,application/problem+json,text/plain,text/html,text/css,application/javascript
+    min-response-size: 1KB
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+app:
+  db:
+    default-query-timeout-seconds: 30
+  session-cleanup:
+    enabled: true
+    cron: "0 15 3 * * *"
+    zone: UTC
+    retention-days: 30
+    batch-size: 5000
+  security:
+    jwt:
+      # Base64, at least 256 bits. Env var only; startup fails when it is missing or too short.
+      signing-key: ${JWT_SIGNING_KEY}
+      issuer: enterprise-api
+      audience: enterprise-ui
+      access-token-ttl: 15m
+      clock-skew: 30s
+    auth:
+      refresh-token:
+        ttl: 8h
+        cookie-name: refresh_token
+        cookie-path: /api/v1/auth
+        cookie-secure: true
+      session:
+        idle-timeout: 30m
+        absolute-timeout: 8h
+        validation-cache-ttl: 15s
+        validation-cache-size: 10000
+      lockout:
+        max-failed-attempts: 5
+        duration: 15m
+      csrf:
+        cookie-domain:
+        cookie-secure: true
+    password-policy:
+      min-length: 12
+      max-length: 64
+      require-uppercase: true
+      require-lowercase: true
+      require-digit: true
+      require-special: true
+    rate-limit:
+      enabled: true
+      max-buckets: 100000
+      login-per-ip:
+        capacity: 10
+        period: 1m
+      login-per-username:
+        capacity: 5
+        period: 15m
+      refresh-per-ip:
+        capacity: 30
+        period: 1m
+      authenticated-per-user:
+        capacity: 300
+        period: 1m
+      anonymous-per-ip:
+        capacity: 60
+        period: 1m
+    cors:
+      # Comma-separated list of exact origins. Required outside dev; never "*".
+      allowed-origins: ${APP_CORS_ORIGINS}
+    client-ip:
+      # IPs/CIDRs of reverse proxies whose X-Forwarded-For is trusted. Empty = remote address only.
+      trusted-proxies: []
+    headers:
+      hsts-enabled: false
+      hsts-max-age: 365d
+      permissions-policy: "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+
+logging:
+  level:
+    root: INFO
+    com.enterprise.api: INFO
+    # Keep pool and driver logging at INFO so URLs and parameter values are never printed.
+    com.zaxxer.hikari: INFO
+    com.microsoft.sqlserver: INFO
+    org.springframework.jdbc: INFO

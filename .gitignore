@@ -1,0 +1,34 @@
+# Build output
+target/
+dist/
+build/
+out/
+*.class
+*.log
+
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+flyway.conf
+flyway.toml
+flyway.user.toml
+
+# IDE / editor
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+
+# Personal Claude Code settings (shared .claude/settings.json and commands are tracked)
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db

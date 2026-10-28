@@ -1,0 +1,12 @@
+# Copy to flyway.conf (git-ignored) and adjust the URL.
+# Do NOT put credentials here: set them as environment variables instead,
+# which Flyway reads automatically:
+#   FLYWAY_USER=<sql login>
+#   FLYWAY_PASSWORD=<password>
+
+flyway.url=jdbc:sqlserver://localhost:1433;databaseName=EnterpriseBase;encrypt=true;trustServerCertificate=true
+flyway.locations=filesystem:migrations
+flyway.schemas=dbo
+flyway.validateMigrationNaming=true
+# Seed data contains '$' characters (BCrypt hash); keep Flyway placeholders off.
+flyway.placeholderReplacement=false
